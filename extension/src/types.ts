@@ -15,9 +15,6 @@ export interface Issue {
   explanation: string;
   fixedCode?: string;
   rule: string;
-  trigger: string;
-  impact: string;
-  confidence: number;
 }
 
 export interface AnalyzeRequest {

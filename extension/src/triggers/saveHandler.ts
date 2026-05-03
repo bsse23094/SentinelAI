@@ -4,6 +4,7 @@
  * Uses an Output Channel for verbose logging (View → Output → SentinelAI).
  */
 
+
 import * as vscode from "vscode";
 import { extractFile } from "../extraction/codeExtractor";
 import { analyzeCode } from "../api/client";
@@ -105,7 +106,7 @@ export function initSaveHandler(context: vscode.ExtensionContext): void {
     if (existing) {
       clearTimeout(existing);
     }
-    
+
 
     const timer = setTimeout(() => {
       debounceTimers.delete(uri);

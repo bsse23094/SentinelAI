@@ -1,10 +1,12 @@
 /**
  * Security Agent
  * Uses Groq (llama3-70b) for fast security vulnerability detection.
+ * Falls back to OpenRouter when Groq is rate-limited.
  */
 
-import { callGroq } from "../models/groqClient";
 import { buildPrompt } from "../utils/promptBuilder";
+import { callGroqWithOpenRouterFallback } from "../utils/modelFallback";
+import { parseAgentIssues } from "../utils/parseIssues";
 import type { Issue } from "../types";
 
 export async function runSecurityAgent(
@@ -17,21 +19,10 @@ export async function runSecurityAgent(
     agentType: "security",
   });
 
-  try {
-    const response = await callGroq([
-      { role: "system", content: system },
-      { role: "user", content: user },
-    ]);
+  const response = await callGroqWithOpenRouterFallback([
+    { role: "system", content: system },
+    { role: "user", content: user },
+  ]);
 
-    const parsed = JSON.parse(response);
-    const issues: Issue[] = (parsed.issues || []).map((issue: Issue) => ({
-      ...issue,
-      agent: "security" as const,
-    }));
-
-    return issues;
-  } catch (error) {
-    console.error("[SecurityAgent] Error:", error);
-    return [];
-  }
+  return parseAgentIssues(response, "security");
 }

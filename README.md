@@ -28,7 +28,7 @@ Instead of waiting for a CI/CD pipeline, SentinelAI catches issues **inline as y
 
 SentinelAI consists of two main components:
 1. **VS Code Extension (`/extension`)**: A lightweight TypeScript client that interacts with the VS Code API (Diagnostics, Hover, Code Actions, Output Channels) and orchestrates code extraction.
-2. **Analysis Backend (`/api`)**: A Next.js microservice utilizing Langchain-inspired parallel execution of LLM agents (powered by Groq and OpenRouter).
+2. **Analysis Backend (`/api`)**: A Next.js microservice utilizing Langchain-inspired parallel execution of LLM agents (powered by Groq and OpenRouter). Features automatic model fallback: if Groq is rate-limited (429), the system transparently falls back to OpenRouter without interrupting analysis.
 
 ### Supported Languages
 JavaScript, TypeScript, Python, Java, Go, Rust, C, C++, C#, PHP, and Ruby.

@@ -38,6 +38,8 @@ export function analyzeCode(request: AnalyzeRequest): Promise<AnalyzeResponse> {
       headers["X-Sentinel-Secret"] = apiSecret;
     }
 
+    
+
     const options: http.RequestOptions = {
       hostname: url.hostname,
       port,
@@ -74,6 +76,7 @@ export function analyzeCode(request: AnalyzeRequest): Promise<AnalyzeResponse> {
       });
     });
 
+  
     req.setTimeout(30000, () => {
       req.destroy();
       reject(new Error("SentinelAI: API request timed out after 30s"));

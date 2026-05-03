@@ -5,6 +5,7 @@
 
 import { callOpenRouter } from "../models/openrouterClient";
 import { buildPrompt } from "../utils/promptBuilder";
+import { parseAgentIssues } from "../utils/parseIssues";
 import type { Issue } from "../types";
 
 export async function runComplexityAgent(
@@ -17,21 +18,10 @@ export async function runComplexityAgent(
     agentType: "complexity",
   });
 
-  try {
-    const response = await callOpenRouter([
-      { role: "system", content: system },
-      { role: "user", content: user },
-    ]);
+  const response = await callOpenRouter([
+    { role: "system", content: system },
+    { role: "user", content: user },
+  ]);
 
-    const parsed = JSON.parse(response);
-    const issues: Issue[] = (parsed.issues || []).map((issue: Issue) => ({
-      ...issue,
-      agent: "complexity" as const,
-    }));
-
-    return issues;
-  } catch (error) {
-    console.error("[ComplexityAgent] Error:", error);
-    return [];
-  }
+  return parseAgentIssues(response, "complexity");
 }

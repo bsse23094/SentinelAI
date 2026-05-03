@@ -18,6 +18,7 @@ export function initDiagnosticProvider(
   return diagnosticCollection;
 }
 
+
 export function getDiagnosticCollection(): vscode.DiagnosticCollection {
   return diagnosticCollection;
 }
