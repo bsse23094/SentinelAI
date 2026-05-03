@@ -14,6 +14,12 @@ export interface Issue {
   explanation: string;
   fixedCode?: string;
   rule: string;
+  /** The exact code token/pattern that triggered this issue (required for filter). */
+  trigger: string;
+  /** Concrete impact: what goes wrong if this is not fixed (required for filter). */
+  impact: string;
+  /** Model self-assessed confidence score 0.0–1.0 (required for filter). */
+  confidence: number;
 }
 
 export interface AnalyzeRequest {

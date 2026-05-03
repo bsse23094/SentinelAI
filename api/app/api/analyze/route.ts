@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { runSecurityAgent } from "./agents/securityAgent";
 import { runComplexityAgent } from "./agents/complexityAgent";
 import { runSmellAgent } from "./agents/smellAgent";
+import { filterAndNormalizeIssues, formatFilterLog } from "./utils/issueFilter";
 import type { AnalyzeRequest, AnalyzeResponse, Issue } from "./types";
 import crypto from "crypto";
 
@@ -103,10 +104,37 @@ export async function POST(request: NextRequest) {
     }
 
     const results = await Promise.all(agentPromises);
-    const allIssues = results.flat();
+    const rawIssues = results.flat();
 
-    // Store in cache
-    cache.set(hash, { issues: allIssues, timestamp: Date.now() });
+    // ── Filter & Normalize (gatekeeper layer) ──
+    // The AI model output is NOT trusted. Each issue must pass strict validation.
+    const agentNames = [
+      ...(analysisType.includes("security") ? ["security"] : []),
+      ...(analysisType.includes("complexity") ? ["complexity"] : []),
+      ...(analysisType.includes("smell") ? ["smell"] : []),
+    ];
+
+    let totalDiscarded = 0;
+    let totalDowngraded = 0;
+    const filteredIssues: Issue[] = [];
+
+    for (const agentName of agentNames) {
+      const agentRaw = rawIssues.filter(i => i.agent === agentName);
+      const result = filterAndNormalizeIssues(agentRaw);
+      const logLine = formatFilterLog(result, agentName);
+      console.log(logLine);
+      filteredIssues.push(...result.kept);
+      totalDiscarded += result.stats.discarded;
+      totalDowngraded += result.stats.downgraded;
+    }
+
+    console.log(
+      `[Filter:total] ${rawIssues.length} raw → ${filteredIssues.length} kept` +
+      ` (${totalDiscarded} discarded, ${totalDowngraded} downgraded)`
+    );
+
+    // Cache the FILTERED result (not raw)
+    cache.set(hash, { issues: filteredIssues, timestamp: Date.now() });
 
     // Periodic cleanup
     if (cache.size > 100) {
@@ -115,7 +143,7 @@ export async function POST(request: NextRequest) {
 
     const latency = Date.now() - startTime;
     const response: AnalyzeResponse = {
-      issues: allIssues,
+      issues: filteredIssues,
       model: models.join(", "),
       latency,
     };

@@ -9,6 +9,7 @@ import * as https from "https";
 import * as vscode from "vscode";
 import { AnalyzeRequest, AnalyzeResponse } from "../types";
 
+
 export function analyzeCode(request: AnalyzeRequest): Promise<AnalyzeResponse> {
   return new Promise((resolve, reject) => {
     const config = vscode.workspace.getConfiguration("sentinelai");

@@ -12,6 +12,7 @@ import { updateDiagnostics } from "../providers/diagnosticProvider";
 import { setLatestIssues } from "../providers/hoverProvider";
 import { AgentType } from "../types";
 
+
 // Track debounce timers per document URI
 const debounceTimers = new Map<string, NodeJS.Timeout>();
 
@@ -104,6 +105,7 @@ export function initSaveHandler(context: vscode.ExtensionContext): void {
     if (existing) {
       clearTimeout(existing);
     }
+    
 
     const timer = setTimeout(() => {
       debounceTimers.delete(uri);

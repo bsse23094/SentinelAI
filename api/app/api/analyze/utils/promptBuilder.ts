@@ -10,20 +10,28 @@ export interface PromptConfig {
 }
 
 const ISSUE_SCHEMA_DESCRIPTION = `
-Return a JSON object with an "issues" array. Each issue must have:
+Return a JSON object with an "issues" array. Each issue MUST have ALL of the following fields:
 - "id": a unique short string identifier (e.g., "sec-001")
-- "agent": "${"{agentType}"}" (the agent type)
+- "agent": the agent type string
 - "severity": "error" | "warning" | "info"
 - "line": 0-indexed line number where the issue starts
 - "column": 0-indexed column number
 - "endLine": 0-indexed line number where the issue ends
 - "endColumn": 0-indexed column number where the issue ends
-- "message": a short one-line description (shown inline)
+- "message": a short one-line description (shown inline in the editor)
 - "explanation": a detailed explanation of why this is an issue and how to fix it
-- "fixedCode": the corrected code snippet that replaces the problematic code (optional but preferred)
+- "fixedCode": the corrected code snippet replacing the problematic code (optional but preferred)
 - "rule": a kebab-case rule identifier (e.g., "sql-injection", "deep-nesting")
+- "trigger": the EXACT code token, expression, or variable name that triggered this (e.g., "username + password", "eval(input)"). Must be non-empty.
+- "impact": a concrete, specific sentence describing what bad thing happens if unfixed (e.g., "Attacker can dump entire users table via crafted username"). Must be non-empty.
+- "confidence": a number 0.0–1.0 representing your confidence this is a real issue:
+  1.0 = Definitive textbook example (string concat in SQL with user input)
+  0.9 = Very likely, clear evidence in code
+  0.75–0.89 = Probable but depends on unseen context
+  Below 0.75 = Too speculative, DO NOT report these issues.
+  Only include issues where confidence >= 0.75.
 
-If no issues are found, return {"issues": []}.
+If no qualifying issues are found, return {"issues": []}.
 IMPORTANT: Return ONLY valid JSON. No markdown, no code fences, no extra text.
 `;
 
