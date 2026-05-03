@@ -15,6 +15,7 @@ import { initDiagnosticProvider, clearAllDiagnostics } from "./providers/diagnos
 import { SentinelHoverProvider, clearIssues } from "./providers/hoverProvider";
 import { SentinelCodeActionProvider } from "./providers/codeActionProvider";
 import { SentinelSidebarProvider } from "./sidebar/webviewPanel";
+import { SentinelDashboardPanel } from "./dashboard/DashboardPanel";
 import { initSaveHandler, runAnalysis, getOutputChannel } from "./triggers/saveHandler";
 import { extractFile, extractSelection } from "./extraction/codeExtractor";
 import { resultCache } from "./cache/resultCache";
@@ -145,6 +146,13 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.commands.registerCommand("sentinelai.openSummary", () => {
       vscode.commands.executeCommand("sentinelai.summaryView.focus");
+    })
+  );
+
+  // Open Dashboard (full interactive panel)
+  context.subscriptions.push(
+    vscode.commands.registerCommand("sentinelai.openDashboard", () => {
+      SentinelDashboardPanel.createOrShow();
     })
   );
 

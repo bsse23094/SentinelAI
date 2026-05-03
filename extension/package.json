@@ -49,6 +49,11 @@
         "command": "sentinelai.scanWorkspace",
         "title": "SentinelAI: Scan Workspace",
         "category": "SentinelAI"
+      },
+      {
+        "command": "sentinelai.openDashboard",
+        "title": "SentinelAI: Open Dashboard",
+        "category": "SentinelAI"
       }
     ],
     "menus": {
