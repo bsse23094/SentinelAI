@@ -12,6 +12,7 @@ interface CacheEntry {
   timestamp: number;
 }
 
+
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 class ResultCache {

@@ -71,6 +71,8 @@ export class SentinelDashboardPanel {
     } catch { /* ignore */ }
   }
 
+
+  
   private async _runScan() {
     this._isScanning = true;
     const config = vscode.workspace.getConfiguration("sentinelai");
@@ -247,6 +249,33 @@ export class SentinelDashboardPanel {
   .success-banner p{color:var(--muted);font-size:13px}
   /* Error */
   .error-box{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);border-radius:12px;padding:16px;margin:20px 28px;color:var(--red);font-size:13px}
+  /* ── AI Loader ── */
+  .ai-loader{display:none;padding:36px 28px;text-align:center}
+  .ai-loader.visible{display:block}
+  /* Radar rings */
+  .radar-wrap{position:relative;width:120px;height:120px;margin:0 auto 24px}
+  .ring{position:absolute;border-radius:50%;border:2px solid rgba(74,222,128,0.35);animation:ring-pulse 2.4s ease-out infinite}
+  .ring:nth-child(1){inset:40px;animation-delay:0s}
+  .ring:nth-child(2){inset:20px;animation-delay:0.6s}
+  .ring:nth-child(3){inset:0;animation-delay:1.2s}
+  .radar-core{position:absolute;inset:44px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 24px rgba(74,222,128,0.7);animation:core-glow 1s ease-in-out infinite alternate}
+  @keyframes ring-pulse{0%{transform:scale(0.7);opacity:0.9}100%{transform:scale(1.4);opacity:0}}
+  @keyframes core-glow{from{box-shadow:0 0 12px rgba(74,222,128,0.5)}to{box-shadow:0 0 36px rgba(74,222,128,1)}}
+  .ai-status-txt{font-size:15px;font-weight:700;color:var(--accent);margin-bottom:6px}
+  .ai-dots span{animation:blink 1.4s infinite;display:inline-block}
+  .ai-dots span:nth-child(2){animation-delay:0.2s}
+  .ai-dots span:nth-child(3){animation-delay:0.4s}
+  @keyframes blink{0%,80%,100%{opacity:0}40%{opacity:1}}
+  .ai-agent-row{display:flex;justify-content:center;gap:10px;margin:10px 0}
+  .agent-chip{background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:4px 12px;font-size:11px;color:var(--muted);transition:all 0.3s}
+  .agent-chip.active{border-color:var(--accent);color:var(--accent);background:rgba(74,222,128,0.08);box-shadow:0 0 10px rgba(74,222,128,0.2)}
+  .ai-file-name{font-family:monospace;font-size:12px;color:var(--muted);margin-top:8px;min-height:18px;transition:all 0.3s}
+  /* Skeleton cards */
+  .skeleton-wrap{padding:0 28px 16px;display:flex;flex-direction:column;gap:10px}
+  .skeleton-card{background:var(--surface);border-radius:14px;padding:18px;border:1px solid var(--border);animation:shimmer 1.8s ease-in-out infinite}
+  .sk-line{background:linear-gradient(90deg,var(--surface2) 25%,var(--card) 50%,var(--surface2) 75%);background-size:200% 100%;border-radius:6px;animation:shimmer-move 1.8s infinite}
+  @keyframes shimmer{0%,100%{opacity:0.5}50%{opacity:1}}
+  @keyframes shimmer-move{0%{background-position:200% 0}100%{background-position:-200% 0}}
 </style>
 </head>
 <body>
@@ -275,6 +304,28 @@ export class SentinelDashboardPanel {
   </div>
   <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
   <div class="current-file" id="currentFile">—</div>
+</div>
+
+<!-- AI Loader -->
+<div class="ai-loader" id="aiLoader">
+  <div class="radar-wrap">
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="radar-core">🤖</div>
+  </div>
+  <div class="ai-status-txt">AI is reading your code<span class="ai-dots"><span>.</span><span>.</span><span>.</span></span></div>
+  <div class="ai-agent-row">
+    <span class="agent-chip" id="chip-security">🔴 Security</span>
+    <span class="agent-chip" id="chip-complexity">🧠 Complexity</span>
+    <span class="agent-chip" id="chip-smell">👃 Code Smells</span>
+  </div>
+  <div class="ai-file-name" id="aiFileName">Initializing agents...</div>
+</div>
+<div class="skeleton-wrap" id="skeletonWrap" style="display:none">
+  <div class="skeleton-card"><div class="sk-line" style="height:14px;width:60%;margin-bottom:10px"></div><div class="sk-line" style="height:10px;width:85%;margin-bottom:6px"></div><div class="sk-line" style="height:10px;width:40%"></div></div>
+  <div class="skeleton-card"><div class="sk-line" style="height:14px;width:45%;margin-bottom:10px"></div><div class="sk-line" style="height:10px;width:75%;margin-bottom:6px"></div><div class="sk-line" style="height:10px;width:55%"></div></div>
+  <div class="skeleton-card"><div class="sk-line" style="height:14px;width:70%;margin-bottom:10px"></div><div class="sk-line" style="height:10px;width:65%;margin-bottom:6px"></div><div class="sk-line" style="height:10px;width:35%"></div></div>
 </div>
 
 <div class="stats" id="stats">
@@ -313,6 +364,17 @@ function startScan(){
   document.getElementById('warnCount').textContent='0';
   document.getElementById('infoCount').textContent='0';
   document.getElementById('fileCount').textContent='0';
+  // Show loader immediately
+  document.getElementById('aiLoader').classList.add('visible');
+  document.getElementById('skeletonWrap').style.display='flex';
+  document.getElementById('skeletonWrap').style.flexDirection='column';
+  // Cycle agent chips
+  let chipIdx=0; const chips=['chip-security','chip-complexity','chip-smell'];
+  window._chipTimer = setInterval(()=>{
+    chips.forEach(c=>document.getElementById(c).classList.remove('active'));
+    document.getElementById(chips[chipIdx%3]).classList.add('active');
+    chipIdx++;
+  },800);
   const btn = document.getElementById('scanBtn');
   btn.disabled = true;
   document.getElementById('btnIcon').innerHTML = '<div class="spinner"></div>';
@@ -386,6 +448,7 @@ window.addEventListener('message',e=>{
   if(msg.type==='scanStart'){
     totalFiles=msg.total;
     document.getElementById('progressWrap').classList.add('visible');
+    document.getElementById('aiFileName').textContent=\`Found \${msg.total} files — starting AI analysis...\`;
   }
   if(msg.type==='progress'){
     const pct=Math.round((msg.current/msg.total)*100);
@@ -393,8 +456,11 @@ window.addEventListener('message',e=>{
     document.getElementById('progressPct').textContent=pct+'%';
     document.getElementById('progressText').textContent=\`Scanning file \${msg.current} of \${msg.total}\`;
     document.getElementById('currentFile').textContent=msg.fileName;
+    document.getElementById('aiFileName').textContent=\`🔍 Analyzing: \${msg.fileName}\`;
   }
   if(msg.type==='fileResult'){
+    // Hide skeleton once first real results arrive
+    document.getElementById('skeletonWrap').style.display='none';
     // Group by agent within a file
     const byAgent={};
     msg.issues.forEach(iss=>{
@@ -415,7 +481,12 @@ window.addEventListener('message',e=>{
   }
   if(msg.type==='scanComplete'){
     scanning=false;
+    // Tear down all loader UI
+    document.getElementById('aiLoader').classList.remove('visible');
+    document.getElementById('skeletonWrap').style.display='none';
     document.getElementById('progressWrap').classList.remove('visible');
+    if(window._chipTimer){ clearInterval(window._chipTimer); window._chipTimer=null; }
+    ['chip-security','chip-complexity','chip-smell'].forEach(c=>document.getElementById(c).classList.remove('active'));
     document.getElementById('fileCount').textContent=msg.filesScanned;
     const btn=document.getElementById('scanBtn');
     btn.disabled=false;
@@ -431,10 +502,13 @@ window.addEventListener('message',e=>{
   }
   if(msg.type==='error'){
     scanning=false;
+    document.getElementById('aiLoader').classList.remove('visible');
+    document.getElementById('skeletonWrap').style.display='none';
+    document.getElementById('progressWrap').classList.remove('visible');
+    if(window._chipTimer){ clearInterval(window._chipTimer); window._chipTimer=null; }
     document.getElementById('btnIcon').textContent='🔍';
     document.getElementById('btnText').textContent='SCAN MY CODEBASE';
     document.getElementById('scanBtn').disabled=false;
-    document.getElementById('progressWrap').classList.remove('visible');
     document.getElementById('errorBox').innerHTML=\`<div class="error-box">⚠️ \${msg.message}</div>\`;
   }
 });
