@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "compile-extension",
+      "type": "shell",
+      "command": "npx tsc -p ./",
+      "options": {
+        "cwd": "${workspaceFolder}/extension"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": "$tsc"
+    },
+    {
+      "label": "watch-extension",
+      "type": "shell",
+      "command": "npx tsc -watch -p ./",
+      "options": {
+        "cwd": "${workspaceFolder}/extension"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "isBackground": true,
+      "problemMatcher": "$tsc-watch"
+    }
+  ]
+}

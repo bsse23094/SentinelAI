@@ -1,0 +1,211 @@
+{
+  "name": "sentinelai",
+  "displayName": "SentinelAI",
+  "description": "AI-powered code review — catches security vulnerabilities, complexity issues, and code smells inline with one-click fixes.",
+  "version": "0.1.0",
+  "publisher": "sentinelai",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "security",
+    "code review",
+    "AI",
+    "linter",
+    "code quality"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "sentinelai.analyzeFile",
+        "title": "SentinelAI: Analyze File",
+        "category": "SentinelAI"
+      },
+      {
+        "command": "sentinelai.analyzeSelection",
+        "title": "SentinelAI: Analyze Selection",
+        "category": "SentinelAI"
+      },
+      {
+        "command": "sentinelai.clearDiagnostics",
+        "title": "SentinelAI: Clear Diagnostics",
+        "category": "SentinelAI"
+      },
+      {
+        "command": "sentinelai.openSummary",
+        "title": "SentinelAI: Open Summary",
+        "category": "SentinelAI"
+      },
+      {
+        "command": "sentinelai.scanWorkspace",
+        "title": "SentinelAI: Scan Workspace",
+        "category": "SentinelAI"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "sentinelai.analyzeFile",
+          "when": "editorLangId =~ /javascript|typescript|python|java|go|rust|c|cpp|csharp|php|ruby/",
+          "group": "sentinelai@1"
+        },
+        {
+          "command": "sentinelai.analyzeSelection",
+          "when": "editorLangId =~ /javascript|typescript|python|java|go|rust|c|cpp|csharp|php|ruby/ && editorHasSelection",
+          "group": "sentinelai@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "sentinelai.scanWorkspace"
+        },
+        {
+          "command": "sentinelai.analyzeFile"
+        },
+        {
+          "command": "sentinelai.analyzeSelection"
+        },
+        {
+          "command": "sentinelai.clearDiagnostics"
+        },
+        {
+          "command": "sentinelai.openSummary"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "SentinelAI",
+      "properties": {
+        "sentinelai.apiUrl": {
+          "type": "string",
+          "default": "http://localhost:3000",
+          "description": "URL of the SentinelAI analysis API."
+        },
+        "sentinelai.apiSecret": {
+          "type": "string",
+          "default": "",
+          "description": "API secret for authenticating with the SentinelAI backend."
+        },
+        "sentinelai.triggerOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically analyze code on file save."
+        },
+        "sentinelai.debounceMs": {
+          "type": "number",
+          "default": 2000,
+          "description": "Debounce delay in milliseconds before triggering analysis on save."
+        },
+        "sentinelai.maxLines": {
+          "type": "number",
+          "default": 200,
+          "description": "Maximum number of lines to send for analysis. Files exceeding this are trimmed."
+        },
+        "sentinelai.maxWorkspaceFiles": {
+          "type": "number",
+          "default": 50,
+          "description": "Maximum number of files to analyze during a workspace scan."
+        },
+        "sentinelai.excludePatterns": {
+          "type": "array",
+          "default": [
+            "**/node_modules/**",
+            "**/dist/**",
+            "**/out/**",
+            "**/build/**",
+            "**/.git/**",
+            "**/coverage/**",
+            "**/__pycache__/**"
+          ],
+          "description": "Glob patterns to exclude during workspace scanning."
+        },
+        "sentinelai.agents": {
+          "type": "array",
+          "default": [
+            "security",
+            "complexity",
+            "smell"
+          ],
+          "items": {
+            "type": "string",
+            "enum": [
+              "security",
+              "complexity",
+              "smell"
+            ]
+          },
+          "description": "Which analysis agents to run."
+        },
+        "sentinelai.severity.security": {
+          "type": "string",
+          "default": "error",
+          "enum": [
+            "error",
+            "warning",
+            "info"
+          ],
+          "description": "Default severity for security issues."
+        },
+        "sentinelai.severity.complexity": {
+          "type": "string",
+          "default": "warning",
+          "enum": [
+            "error",
+            "warning",
+            "info"
+          ],
+          "description": "Default severity for complexity issues."
+        },
+        "sentinelai.severity.smell": {
+          "type": "string",
+          "default": "info",
+          "enum": [
+            "error",
+            "warning",
+            "info"
+          ],
+          "description": "Default severity for code smell issues."
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sentinelai-sidebar",
+          "title": "SentinelAI",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "sentinelai-sidebar": [
+        {
+          "type": "webview",
+          "id": "sentinelai.summaryView",
+          "name": "Analysis Summary"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "npx vsce package",
+    "pretest": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.9.1",
+    "typescript": "^5.3.0"
+  }
+}
