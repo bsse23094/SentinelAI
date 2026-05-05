@@ -92,7 +92,7 @@
       "properties": {
         "sentinelai.apiUrl": {
           "type": "string",
-          "default": "http://localhost:3000",
+          "default": "https://api-no437yvhp-ahmed-ayyans-projects.vercel.app",
           "description": "URL of the SentinelAI analysis API."
         },
         "sentinelai.apiSecret": {
