@@ -39,6 +39,7 @@ export function analyzeCode(request: AnalyzeRequest): Promise<AnalyzeResponse> {
     }
 
     
+    
 
     const options: http.RequestOptions = {
       hostname: url.hostname,
@@ -76,6 +77,7 @@ export function analyzeCode(request: AnalyzeRequest): Promise<AnalyzeResponse> {
       });
     });
 
+    
   
     req.setTimeout(30000, () => {
       req.destroy();

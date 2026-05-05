@@ -19,7 +19,15 @@ function extractJsonCandidate(response: string): string {
   return response.trim();
 }
 
+
 export function parseAgentIssues(response: string, agent: Issue["agent"]): Issue[] {
+  // Guard: empty response means the model returned nothing (e.g. token limit hit).
+  // Return empty issues instead of throwing so the agent is not counted as failed.
+  if (!response || response.trim() === "") {
+    console.warn(`[parseIssues] ${agent} agent returned empty response, treating as no issues`);
+    return [];
+  }
+
   let parsed: unknown;
   const jsonCandidate = extractJsonCandidate(response);
 

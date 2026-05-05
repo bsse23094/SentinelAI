@@ -3,8 +3,8 @@
  * Uses OpenRouter (Claude Haiku / DeepSeek) for deep complexity analysis.
  */
 
-import { callOpenRouter } from "../models/openrouterClient";
 import { buildPrompt } from "../utils/promptBuilder";
+import { callGroqWithOpenRouterFallback } from "../utils/modelFallback";
 import { parseAgentIssues } from "../utils/parseIssues";
 import type { Issue } from "../types";
 
@@ -18,7 +18,7 @@ export async function runComplexityAgent(
     agentType: "complexity",
   });
 
-  const response = await callOpenRouter([
+  const response = await callGroqWithOpenRouterFallback([
     { role: "system", content: system },
     { role: "user", content: user },
   ]);

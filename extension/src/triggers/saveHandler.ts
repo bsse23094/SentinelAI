@@ -14,6 +14,7 @@ import { setLatestIssues } from "../providers/hoverProvider";
 import { AgentType } from "../types";
 
 
+
 // Track debounce timers per document URI
 const debounceTimers = new Map<string, NodeJS.Timeout>();
 

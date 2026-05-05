@@ -71,7 +71,6 @@ export class SentinelDashboardPanel {
     } catch { /* ignore */ }
   }
 
-
   
   private async _runScan() {
     this._isScanning = true;
