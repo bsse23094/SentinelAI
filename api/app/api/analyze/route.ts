@@ -83,30 +83,65 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(response);
     }
 
-    // Run requested agents in parallel
-    const agentPromises: Promise<Issue[]>[] = [];
-    const models: string[] = [];
+    // Run requested agents in parallel and tolerate single-agent failures.
+    const agentRuns: Array<{
+      name: "security" | "complexity" | "smell";
+      model: string;
+      run: Promise<Issue[]>;
+    }> = [];
 
     if (analysisType.includes("security")) {
-      agentPromises.push(runSecurityAgent(body.code, language));
-      models.push("llama-3.3-70b-versatile");
+      agentRuns.push({
+        name: "security",
+        model: "llama-3.3-70b-versatile",
+        run: runSecurityAgent(body.code, language),
+      });
     }
 
     if (analysisType.includes("complexity")) {
-      agentPromises.push(runComplexityAgent(body.code, language));
-      models.push("claude-haiku");
+      agentRuns.push({
+        name: "complexity",
+        model: "claude-haiku",
+        run: runComplexityAgent(body.code, language),
+      });
     }
 
     if (analysisType.includes("smell")) {
-      agentPromises.push(runSmellAgent(body.code, language));
-      models.push("llama-3.3-70b-versatile");
+      agentRuns.push({
+        name: "smell",
+        model: "llama-3.3-70b-versatile",
+        run: runSmellAgent(body.code, language),
+      });
     }
 
-    const results = await Promise.all(agentPromises);
-    const allIssues = results.flat();
+    const settled = await Promise.allSettled(agentRuns.map((agent) => agent.run));
 
-    // Store in cache
-    cache.set(hash, { issues: allIssues, timestamp: Date.now() });
+    const allIssues: Issue[] = [];
+    const successfulModels: string[] = [];
+    const failedAgents: string[] = [];
+
+    settled.forEach((result, index) => {
+      const agent = agentRuns[index];
+
+      if (result.status === "fulfilled") {
+        allIssues.push(...result.value);
+        successfulModels.push(agent.model);
+        return;
+      }
+
+      failedAgents.push(agent.name);
+      const reason = result.reason instanceof Error ? result.reason.message : String(result.reason);
+      console.warn(`[/api/analyze] Agent '${agent.name}' failed: ${reason}`);
+    });
+
+    if (allIssues.length === 0 && failedAgents.length === agentRuns.length) {
+      throw new Error(`All analysis agents failed: ${failedAgents.join(", ")}`);
+    }
+
+    // Store successful full responses only. Partial failures are likely transient.
+    if (failedAgents.length === 0) {
+      cache.set(hash, { issues: allIssues, timestamp: Date.now() });
+    }
 
     // Periodic cleanup
     if (cache.size > 100) {
@@ -116,7 +151,10 @@ export async function POST(request: NextRequest) {
     const latency = Date.now() - startTime;
     const response: AnalyzeResponse = {
       issues: allIssues,
-      model: models.join(", "),
+      model:
+        failedAgents.length > 0
+          ? `${successfulModels.join(", ")} (failed: ${failedAgents.join(",")})`
+          : successfulModels.join(", "),
       latency,
     };
 
