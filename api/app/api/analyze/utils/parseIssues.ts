@@ -28,6 +28,7 @@ export function parseAgentIssues(response: string, agent: Issue["agent"]): Issue
     return [];
   }
 
+
   let parsed: unknown;
   const jsonCandidate = extractJsonCandidate(response);
 

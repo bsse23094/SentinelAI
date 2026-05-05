@@ -13,6 +13,10 @@ import { runSmellAgent } from "./agents/smellAgent";
 import type { AnalyzeRequest, AnalyzeResponse, Issue } from "./types";
 import crypto from "crypto";
 
+// Vercel Hobby plan: extend function timeout from 10s to 60s.
+// Without this, 3 parallel LLM calls silently time out.
+export const maxDuration = 60;
+
 // In-memory cache: Map<sha256, Issue[]>
 const cache = new Map<string, { issues: Issue[]; timestamp: number }>();
 const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
