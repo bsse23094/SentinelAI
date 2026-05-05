@@ -92,7 +92,7 @@
       "properties": {
         "sentinelai.apiUrl": {
           "type": "string",
-          "default": "https://api-no437yvhp-ahmed-ayyans-projects.vercel.app",
+          "default": "https://api-lemon-alpha-86.vercel.app",
           "description": "URL of the SentinelAI analysis API."
         },
         "sentinelai.apiSecret": {

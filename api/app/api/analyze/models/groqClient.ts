@@ -101,7 +101,6 @@ export async function callGroq(
     }
   }
 
-
   // All Groq models exhausted
   throw lastError ?? new Error("All Groq models exhausted");
 }

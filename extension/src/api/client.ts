@@ -77,13 +77,6 @@ export function analyzeCode(request: AnalyzeRequest): Promise<AnalyzeResponse> {
       });
     });
 
-    
-  
-    req.setTimeout(30000, () => {
-      req.destroy();
-      reject(new Error("SentinelAI: API request timed out after 30s"));
-    });
-
     req.on("error", (error: NodeJS.ErrnoException) => {
       if (error.code === "ECONNREFUSED") {
         reject(
