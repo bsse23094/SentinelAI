@@ -1,9 +1,9 @@
 {
-  "name": "sentinelai",
+  "name": "sentinelai-vscode",
   "displayName": "SentinelAI",
   "description": "AI-powered code review — catches security vulnerabilities, complexity issues, and code smells inline with one-click fixes.",
   "version": "0.1.0",
-  "publisher": "sentinelai",
+  "publisher": "AhmedAyyanMukhtar",
   "engines": {
     "vscode": "^1.85.0"
   },
